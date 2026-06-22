@@ -3,62 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Ruleta Interactiva Pro</title>
+    <title>Ruleta Pro Ultimate Edition</title>
     <style>
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* Variables para el Tema (Claro/Oscuro) */
+        :root {
+            --bg-body: #121214;
+            --bg-panel: #1e1e24;
+            --bg-input: #191922;
+            --bg-row: #2a2a35;
+            --text-main: #ffffff;
+            --text-accent: #00ff88;
+            --border-color: #3a3a44;
+        }
+
+        .light-theme {
+            --bg-body: #f0f2f5;
+            --bg-panel: #ffffff;
+            --bg-input: #f0f0f5;
+            --bg-row: #e4e6eb;
+            --text-main: #121214;
+            --text-accent: #00aa5b;
+            --border-color: #ccd0d5;
+        }
+
         body {
-            background-color: #121214;
-            color: #fff;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
             overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
         }
 
         /* --- MENÚ DE INICIO --- */
         #mainMenu {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(circle, #1e1e24 0%, #121214 100%);
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, var(--bg-panel) 0%, var(--bg-body) 100%);
             z-index: 100;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 25px;
+            gap: 20px;
             padding: 20px;
-            text-align: center;
         }
 
         #mainMenu h1 {
             font-size: 3rem;
-            color: #00ff88;
-            text-shadow: 0 0 20px rgba(0,255,136,0.4);
-            margin-bottom: 20px;
+            color: var(--text-accent);
+            text-shadow: 0 0 20px rgba(0,255,136,0.2);
+            margin-bottom: 10px;
         }
 
         .menu-btn {
-            background: #00ff88;
+            background: var(--text-accent);
             color: #121214;
-            font-size: 1.4rem;
-            padding: 20px 40px;
+            font-size: 1.3rem;
+            padding: 18px 35px;
             border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
+            width: 90%; max-width: 400px;
             font-weight: bold;
+            border: none;
+            cursor: pointer;
             box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+            transition: 0.2s;
         }
 
         .menu-btn.secondary {
@@ -67,258 +86,311 @@
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
         }
 
-        /* --- JUEGO PRINCIPAL --- */
+        /* --- INTERFAZ PRINCIPAL --- */
         .game-header {
             display: flex;
-            width: 100%;
-            max-width: 1100px;
+            width: 100%; max-width: 1200px;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        h2 {
-            font-size: 1.8rem;
-            color: #00ff88;
-        }
+        h2 { font-size: 1.6rem; color: var(--text-accent); }
 
-        .btn-back {
-            background: #3a3a44;
-            color: white;
-            padding: 8px 15px;
-            font-size: 0.9rem;
+        .header-btns { display: flex; gap: 10px; }
+        .btn-utility {
+            background: var(--border-color); color: var(--text-main);
+            padding: 10px 15px; font-size: 1rem;
+            border-radius: 8px; border: none; cursor: pointer;
         }
 
         .container {
             display: flex;
             flex-direction: row;
-            gap: 30px;
-            width: 100%;
-            max-width: 1100px;
+            gap: 20px;
+            width: 100%; max-width: 1200px;
             align-items: flex-start;
-            justify-content: center;
         }
 
-        .wheel-container {
+        /* ÁREA RULETA */
+        .wheel-area {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--bg-panel);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+
+        .canvas-wrapper {
             position: relative;
-            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-width: 340px;
+            margin-bottom: 15px;
         }
 
         canvas {
-            background: transparent;
             border-radius: 50%;
-            box-shadow: 0 0 25px rgba(0,0,0,0.5), 0 0 5px #00ff88;
-            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
-            max-width: 100%;
-            height: auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            transition: transform var(--spin-duration, 4s) cubic-bezier(0.1, 0.8, 0.1, 1);
+            max-width: 100%; height: auto;
         }
 
         .marker {
             position: absolute;
-            top: -15px;
-            left: 50%;
+            top: -12px; left: 50%;
             transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 30px solid #ff3366;
+            width: 0; height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 28px solid #ff3366;
             z-index: 10;
+        }
+
+        .marker.tick-active {
+            animation: markerTick 0.12s ease;
+        }
+
+        @keyframes markerTick {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            50% { transform: translateX(-50%) rotate(-12deg); }
+            100% { transform: translateX(-50%) rotate(0deg); }
         }
 
         .center-spin-btn {
             position: absolute;
-            width: 75px;
-            height: 75px;
-            background: #fff;
-            color: #121214;
+            width: 75px; height: 75px;
+            background: #fff; color: #121214;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(0,0,0,0.6);
-            z-index: 12;
-            border: 4px solid #00ff88;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1rem; cursor: pointer;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            z-index: 12; border: 4px solid var(--text-accent);
         }
 
-        .controls-container {
+        /* PANEL LATERAL */
+        .sidebar-panel {
             flex: 1;
-            background: #1e1e24;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            max-height: 80vh;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             width: 100%;
         }
 
-        button {
-            border: none;
-            padding: 14px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
+        .panel-box {
+            background: var(--bg-panel);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
         }
 
-        button:active {
-            transform: scale(0.96);
+        .panel-box h3 {
+            font-size: 1.1rem; color: var(--text-accent);
+            margin-bottom: 10px; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
         }
 
-        .options-list {
-            margin-bottom: 20px;
-        }
-
+        .options-list { max-height: 35vh; overflow-y: auto; margin-bottom: 10px; }
+        
         .option-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-            align-items: center;
+            display: flex; gap: 6px; margin-bottom: 8px;
+            align-items: center; background: var(--bg-row);
+            padding: 6px; border-radius: 8px;
         }
 
-        input[type="text"] {
-            flex: 2;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #3a3a44;
-            background: #2a2a35;
-            color: #fff;
-            font-size: 1rem;
+        .opt-text {
+            flex: 2; padding: 8px; border-radius: 6px;
+            border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main);
         }
 
-        input[type="number"] {
-            width: 70px;
-            padding: 12px 5px;
-            border-radius: 8px;
-            border: 1px solid #3a3a44;
-            background: #2a2a35;
-            color: #fff;
-            font-size: 1rem;
-            text-align: center;
+        .opt-weight {
+            width: 50px; padding: 8px 0; border-radius: 6px;
+            border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); text-align: center;
         }
+
+        .image-upload-btn { background: #3498db; color: white; padding: 8px; border-radius: 6px; border:none; cursor:pointer;}
+        .image-preview-thumb { width: 30px; height: 30px; border-radius: 4px; object-fit: cover; display: none; }
 
         input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
-            background: transparent;
+            -webkit-appearance: none; border: none;
+            width: 35px; height: 35px; background: transparent; cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch { border-radius: 6px; border: 1px solid var(--border-color); }
+        .btn-delete { background: #ff3366; color: white; padding: 8px 12px; border-radius: 6px; border:none; cursor:pointer; }
+
+        .action-btns { display: flex; gap: 8px; }
+        .action-btns button { flex: 1; padding: 12px; font-weight: bold; border-radius: 8px; border:none; cursor:pointer;}
+        .btn-add { background: var(--bg-row); color: var(--text-accent); border: 1px dashed var(--text-accent); }
+        .btn-spin { background: var(--text-accent); color: #121214; font-size: 1.1rem; }
+
+        .history-list {
+            display: flex; flex-direction: column; gap: 6px;
+            max-height: 120px; overflow-y: auto; font-size: 0.95rem;
+        }
+        .history-item {
+            background: var(--bg-row); padding: 6px 10px; border-radius: 6px;
+            display: flex; justify-content: space-between; color: #ffca28;
         }
 
-        input[type="color"]::-webkit-color-swatch {
-            border-radius: 8px;
-            border: 2px solid #3a3a44;
-        }
-
-        .btn-delete { background: #ff3366; color: white; padding: 12px; }
-        .action-btns { display: flex; gap: 10px; }
-        .action-btns button { flex: 1; }
-        .btn-add { background: #3498db; color: white; }
-        .btn-spin { background: #00ff88; color: #121214; font-size: 1.2rem; }
-
-        /* --- POPUP DE RESULTADO (GANADOR) --- */
+        /* --- POPUPS / MODALES --- */
         .popup-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.85);
-            z-index: 200;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            background: rgba(0,0,0,0.8); z-index: 200;
+            display: none; justify-content: center; align-items: center; padding: 20px;
         }
 
         .popup-content {
-            background: #1e1e24;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            border: 3px solid #00ff88;
-            box-shadow: 0 0 30px rgba(0,255,136,0.3);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--bg-panel); padding: 30px; border-radius: 20px;
+            text-align: center; max-width: 450px; width: 100%;
+            border: 3px solid var(--text-accent);
         }
 
-        @keyframes popIn {
-            from { transform: scale(0.7); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        .popup-winner-text { font-size: 2.2rem; color: #ffca28; font-weight: bold; margin: 15px 0; }
+        .popup-img { max-width: 120px; max-height: 120px; border-radius: 12px; margin-bottom: 15px; border: 2px solid #fff; display: none; }
+        .popup-btns { display: flex; flex-direction: column; gap: 10px; }
+        .popup-btns button { padding: 12px; font-weight: bold; border-radius: 8px; border:none; cursor:pointer;}
+        .btn-remove-winner { background: #ff3366; color: white; }
+        .btn-keep-winner { background: var(--border-color); color: var(--text-main); }
 
-        .popup-content h3 {
-            font-size: 1.5rem;
-            color: #aaa;
-            margin-bottom: 10px;
+        /* Ajustes Config */
+        .config-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; text-align: left;
         }
-
-        .popup-winner-text {
-            font-size: 2.5rem;
-            color: #ffff00;
-            font-weight: bold;
-            margin-bottom: 30px;
-            word-wrap: break-word;
+        .config-row select {
+            padding: 8px 12px; background: var(--bg-input); color: var(--text-main); border-radius: 6px; border: 1px solid var(--border-color);
         }
+        .config-row input[type="range"] { accent-color: var(--text-accent); cursor: pointer; }
 
-        .popup-btns {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        /* Estilos específicos de la lista de plantillas */
+        .template-grid {
+            display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px;
         }
-
-        .btn-remove-winner { background: #ff3366; color: white; font-size: 1.1rem; }
-        .btn-keep-winner { background: #3a3a44; color: white; font-size: 1.1rem; }
+        .template-option-btn {
+            background: var(--bg-row); color: var(--text-main); padding: 15px;
+            border-radius: 8px; text-align: left; border: 1px solid var(--border-color);
+            font-size: 1.05rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .template-option-btn:active { transform: scale(0.98); background: var(--text-accent); color: #121214; }
 
         @media (max-width: 850px) {
-            .container { flex-direction: column; align-items: center; }
-            .wheel-container { margin-bottom: 20px; }
+            .container { flex-direction: column; }
+            .sidebar-panel { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
     <div id="mainMenu">
-        <h1>🎡 Súper Ruleta</h1>
-        <button class="menu-btn" onclick="startCustomMode()">🎮 Jugar Personalizada</button>
-        <button class="menu-btn secondary" onclick="startTemplateMode()">🔢 Jugar Plantilla de Números</button>
+        <h1 id="menuTitle"> Súper Ruleta</h1>
+        <button class="menu-btn" onclick="startAppWithMode('custom')" id="btnLibre">🎮 Comenzar Modo Libre</button>
+        <button class="menu-btn secondary" onclick="openTemplatesModal()" id="btnPlantillas">📋 Plantillas</button>
     </div>
 
     <div class="game-header">
-        <h2 id="gameTitle">Ruleta</h2>
-        <button class="btn-back" onclick="goToMenu()">⬅ Menú principal</button>
+        <h2 id="gameTitle">Ruleta Pro</h2>
+        <div class="header-btns">
+            <button class="btn-utility" onclick="openConfigModal()" id="btnConfig">⚙️ Configuración</button>
+            <button class="btn-utility" onclick="goToMenu()" id="btnMenuVolver">⬅ Menú</button>
+        </div>
     </div>
 
     <div class="container">
-        <div class="wheel-container">
-            <div class="marker"></div>
-            <div class="center-spin-btn" id="centerSpin">GIRAR</div>
-            <canvas id="wheelCanvas" width="450" height="450"></canvas>
+        <div class="wheel-area">
+            <div class="canvas-wrapper">
+                <div class="marker" id="wheelMarker"></div>
+                <div class="center-spin-btn" id="centerSpin">GIRAR</div>
+                <canvas id="wheelCanvas" width="440" height="440"></canvas>
+            </div>
+            
+            <div style="width:100%">
+                <h3 style="font-size:1rem; margin-bottom:5px;" id="lblHistorial">📜 Historial de Tiros:</h3>
+                <div class="history-list" id="historyContainer">
+                    <div style="color:#666; font-style:italic; padding:5px;" id="lblNoTiros">Ningún giro todavía...</div>
+                </div>
+            </div>
         </div>
 
-        <div class="controls-container">
-            <div class="options-list" id="optionsContainer"></div>
-            <div class="action-btns">
-                <button class="btn-add" onclick="addOptionRow('', 1, getRandomColor())">➕ Añadir Opción</button>
-                <button class="btn-spin" onclick="spinWheel()">¡GIRAR!</button>
+        <div class="sidebar-panel">
+            <div class="panel-box">
+                <h3 id="lblEditar">✏️ Editar Opciones</h3>
+                <div class="options-list" id="optionsContainer"></div>
+                <div class="action-btns">
+                    <button class="btn-add" onclick="addOptionRow('', 1, getRandomColor())" id="btnAddOpt">➕ Añadir</button>
+                    <button class="btn-spin" onclick="spinWheel()" id="btnSpinMain">¡GIRAR RULETA!</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="popup-overlay" id="winnerPopup">
         <div class="popup-content">
-            <h3>¡Ha salido!</h3>
+            <h3 style="color:#aaa;" id="lblResultado">¡Resultado!</h3>
+            <img class="popup-img" id="popupWinnerImg" src="" alt="Ganador">
             <div class="popup-winner-text" id="winnerText">ELEMENTO</div>
             <div class="popup-btns">
-                <button class="btn-remove-winner" onclick="removeWinnerAction()">❌ Quitar de la ruleta y cerrar</button>
-                <button class="btn-keep-winner" onclick="closePopup()">🔄 Dejar y Seguir Jugando</button>
+                <button class="btn-remove-winner" onclick="removeWinnerAction()" id="btnEliminarGanador">❌ Eliminar opción de la ruleta</button>
+                <button class="btn-keep-winner" onclick="closePopup()" id="btnConservarGanador">🔄 Conservar y continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="configPopup">
+        <div class="popup-content" style="border-color: #3498db; text-align: left;">
+            <h3 style="color:#3498db; font-size:1.5rem; margin-bottom:20px; text-align:center;" id="cfgTitulo">⚙️ Panel de Control</h3>
+            
+            <div class="config-row">
+                <label id="cfgLang">🌐 Lenguaje / Language:</label>
+                <select id="langSelector" onchange="changeLanguage()">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="config-row">
+                <label id="cfgSpeed">⚡ Velocidad de Giro:</label>
+                <input type="range" id="speedSlider" min="1" max="3" value="2" oninput="updateSpeedSettings()">
+            </div>
+
+            <div class="config-row">
+                <label id="cfgTheme">🎨 Tema de Interfaz:</label>
+                <select id="themeSelector" onchange="toggleTheme()">
+                    <option value="dark">Oscuro (Dark)</option>
+                    <option value="light">Claro (Light)</option>
+                </select>
+            </div>
+
+            <div class="config-row">
+                <label id="cfgEffects">🎬 Efecto de Flecha:</label>
+                <select id="effectSelector">
+                    <option value="on">Activado</option>
+                    <option value="off">Desactivado</option>
+                </select>
+            </div>
+
+            <div style="text-align:center; margin-top:20px;">
+                <button class="btn-keep-winner" style="background:#3498db; color:white; padding:10px 25px;" onclick="closeConfigModal()" id="btnCfgCerrar">Guardar y Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="templatesPopup">
+        <div class="popup-content" style="border-color: #3498db; text-align: left;">
+            <h3 style="color:#3498db; font-size:1.5rem; margin-bottom:15px; text-align:center;" id="tmplTitulo">📋 Seleccionar Plantilla</h3>
+            
+            <div class="template-grid">
+                <button class="template-option-btn" onclick="applyTemplatePreset('custom-numbers')" id="tmplCustom">🔢 Cantidad Personalizada de Números</button>
+                <button class="template-option-btn" onclick="applyTemplatePreset('yesno')" id="tmplYesNo">⚖️ Ruleta: Sí o No</button>
+                <button class="template-option-btn" onclick="applyTemplatePreset('weeks')" id="tmplDays">📅 Días de la Semana</button>
+                <button class="template-option-btn" onclick="applyTemplatePreset('colors')" id="tmplColors">🎨 Ruleta de Colores básicos</button>
+            </div>
+
+            <div style="text-align:center; margin-top:20px;">
+                <button class="btn-keep-winner" style="background:var(--border-color); padding:10px 25px;" onclick="closeTemplatesModal()" id="btnTmplCerrar">Cancelar</button>
             </div>
         </div>
     </div>
@@ -330,62 +402,162 @@
         const centerSpin = document.getElementById('centerSpin');
         const mainMenu = document.getElementById('mainMenu');
         const winnerPopup = document.getElementById('winnerPopup');
+        const configPopup = document.getElementById('configPopup');
+        const templatesPopup = document.getElementById('templatesPopup');
         const winnerText = document.getElementById('winnerText');
-        const gameTitle = document.getElementById('gameTitle');
+        const popupWinnerImg = document.getElementById('popupWinnerImg');
+        const historyContainer = document.getElementById('historyContainer');
+        const wheelMarker = document.getElementById('wheelMarker');
+        const speedSlider = document.getElementById('speedSlider');
+        const langSelector = document.getElementById('langSelector');
+        const themeSelector = document.getElementById('themeSelector');
+        const effectSelector = document.getElementById('effectSelector');
 
         let items = [];
         let isSpinning = false;
         let currentRotation = 0;
-        let lastWinnerIndex = null; // Para recordar a quién quitar si se presiona el botón
+        let lastWinnerIndex = null;
+        let spinDuration = 4; 
+        let historyLog = [];
+        let currentLang = 'es';
 
         const defaultColors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#9b59b6', '#34495e', '#1abc9c', '#e67e22', '#ff6b81', '#20bf6b'];
 
-        function getRandomColor() {
-            return defaultColors[Math.floor(Math.random() * defaultColors.length)];
-        }
+        // --- SISTEMA MULTI-IDIOMA EN TIEMPO REAL ---
+        const translations = {
+            es: {
+                title: "Modo de Juego", btnLibre: "🎮 Comenzar Modo Libre", btnPlantillas: "📋 Plantillas",
+                btnConfig: "⚙️ Configuración", btnMenuVolver: "⬅ Menú", lblHistorial: "📜 Historial de Tiros:",
+                lblNoTiros: "Ningún giro todavía...", lblEditar: "✏️ Editar Opciones", btnAddOpt: "➕ Añadir",
+                btnSpinMain: "¡GIRAR RULETA!", lblResultado: "¡Resultado!", btnEliminarGanador: "❌ Eliminar opción de la ruleta",
+                btnConservarGanador: "🔄 Conservar y continuar", cfgTitulo: "⚙️ Panel de Control", cfgLang: "🌐 Lenguaje / Language:",
+                cfgSpeed: "⚡ Velocidad de Giro:", cfgTheme: "🎨 Tema de Interfaz:", cfgEffects: "🎬 Efecto de Flecha:",
+                btnCfgCerrar: "Guardar y Cerrar", tmplTitulo: "📋 Seleccionar Plantilla", tmplCustom: "🔢 Cantidad Personalizada de Números",
+                tmplYesNo: "⚖️ Ruleta: Sí o No", tmplDays: "📅 Días de la Semana", tmplColors: "🎨 Ruleta de Colores básicos",
+                btnTmplCerrar: "Cancelar", spinText: "GIRAR", promptNum: "¿Cuántos números quieres generar?", promptErr: "Por favor inserta un número válido."
+            },
+            en: {
+                title: "Game Mode", btnLibre: "🎮 Start Free Mode", btnPlantillas: "📋 Templates",
+                btnConfig: "⚙️ Settings", btnMenuVolver: "⬅ Menu", lblHistorial: "📜 Spin History:",
+                lblNoTiros: "No spins yet...", lblEditar: "✏️ Edit Options", btnAddOpt: "➕ Add Option",
+                btnSpinMain: "SPIN WHEEL!", lblResultado: "Result!", btnEliminarGanador: "❌ Remove option from wheel",
+                btnConservarGanador: "🔄 Keep and continue", cfgTitulo: "⚙️ Control Panel", cfgLang: "🌐 Language / Lenguaje:",
+                cfgSpeed: "⚡ Spin Speed:", cfgTheme: "🎨 Interface Theme:", cfgEffects: "🎬 Arrow Animation:",
+                btnCfgCerrar: "Save & Close", tmplTitulo: "📋 Select Template", tmplCustom: "🔢 Custom Amount of Numbers",
+                tmplYesNo: "⚖️ Wheel: Yes or No", tmplDays: "📅 Days of the Week", tmplColors: "🎨 Basic Color Wheel",
+                btnTmplCerrar: "Cancel", spinText: "SPIN", promptNum: "How many numbers do you want to generate?", promptErr: "Please insert a valid number."
+            }
+        };
 
-        // --- MANEJO DEL MENÚ ---
-        function startCustomMode() {
-            mainMenu.style.display = 'none';
-            gameTitle.innerText = "Modo Personalizado";
-            optionsContainer.innerHTML = '';
-            addOptionRow('Opción A', 1, '#ff4757');
-            addOptionRow('Opción B', 1, '#2ed573');
-            addOptionRow('Opción C', 1, '#1e90ff');
-            updateWheel();
-        }
-
-        function startTemplateMode() {
-            const quantityStr = prompt("¿Cuántos números quieres generar?", "10");
-            const quantity = parseInt(quantityStr);
+        function changeLanguage() {
+            currentLang = langSelector.value;
+            const t = translations[currentLang];
             
-            if (isNaN(quantity) || quantity <= 0) {
-                alert("Por favor inserta un número válido.");
-                return;
-            }
+            document.getElementById('btnLibre').innerText = t.btnLibre;
+            document.getElementById('btnPlantillas').innerText = t.btnPlantillas;
+            document.getElementById('btnConfig').innerText = t.btnConfig;
+            document.getElementById('btnMenuVolver').innerText = t.btnMenuVolver;
+            document.getElementById('lblHistorial').innerText = t.lblHistorial;
+            if(historyLog.length === 0) document.getElementById('lblNoTiros').innerText = t.lblNoTiros;
+            document.getElementById('lblEditar').innerText = t.lblEditar;
+            document.getElementById('btnAddOpt').innerText = t.btnAddOpt;
+            document.getElementById('btnSpinMain').innerText = t.btnSpinMain;
+            document.getElementById('lblResultado').innerText = t.lblResultado;
+            document.getElementById('btnEliminarGanador').innerText = t.btnEliminarGanador;
+            document.getElementById('btnConservarGanador').innerText = t.btnConservarGanador;
+            document.getElementById('cfgTitulo').innerText = t.cfgTitulo;
+            document.getElementById('cfgLang').innerText = t.cfgLang;
+            document.getElementById('cfgSpeed').innerText = t.cfgSpeed;
+            document.getElementById('cfgTheme').innerText = t.cfgTheme;
+            document.getElementById('cfgEffects').innerText = t.cfgEffects;
+            document.getElementById('btnCfgCerrar').innerText = t.btnCfgCerrar;
+            document.getElementById('tmplTitulo').innerText = t.tmplTitulo;
+            document.getElementById('tmplCustom').innerText = t.tmplCustom;
+            document.getElementById('tmplYesNo').innerText = t.tmplYesNo;
+            document.getElementById('tmplDays').innerText = t.tmplDays;
+            document.getElementById('tmplColors').innerText = t.tmplColors;
+            document.getElementById('btnTmplCerrar').innerText = t.btnTmplCerrar;
+            centerSpin.innerText = t.spinText;
+        }
 
+        function toggleTheme() {
+            if(themeSelector.value === 'light') {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+        }
+
+        function getRandomColor() { return defaultColors[Math.floor(Math.random() * defaultColors.length)]; }
+
+        function updateSpeedSettings() {
+            const val = parseInt(speedSlider.value);
+            spinDuration = val === 1 ? 6 : val === 2 ? 4 : 1.8;
+            document.documentElement.style.setProperty('--spin-duration', `${spinDuration}s`);
+        }
+
+        function startAppWithMode(mode) {
             mainMenu.style.display = 'none';
-            gameTitle.innerText = `Plantilla: ${quantity} Números`;
-            optionsContainer.innerHTML = ''; 
-
-            for (let i = 1; i <= quantity; i++) {
-                const color = defaultColors[(i - 1) % defaultColors.length];
-                addOptionRow(`${i}`, 1, color);
-            }
+            optionsContainer.innerHTML = '';
+            addOptionRow('Opción 1', 1, '#ff4757');
+            addOptionRow('Opción 2', 1, '#2ed573');
+            addOptionRow('Opción 3', 1, '#1e90ff');
             updateWheel();
         }
 
-        function goToMenu() {
-            mainMenu.style.display = 'flex';
+        function goToMenu() { mainMenu.style.display = 'flex'; }
+        function openConfigModal() { configPopup.style.display = 'flex'; }
+        function closeConfigModal() { configPopup.style.display = 'none'; }
+        function openTemplatesModal() { templatesPopup.style.display = 'flex'; }
+        function closeTemplatesModal() { templatesPopup.style.display = 'none'; }
+
+        // --- SISTEMA DE PLANTILLAS AVANZADO ---
+        function applyTemplatePreset(mode) {
+            const t = translations[currentLang];
+            optionsContainer.innerHTML = '';
+
+            if (mode === 'custom-numbers') {
+                const quantityStr = prompt(t.promptNum, "10");
+                const quantity = parseInt(quantityStr);
+                if (isNaN(quantity) || quantity <= 0) {
+                    alert(t.promptErr);
+                    startAppWithMode('custom');
+                    closeTemplatesModal();
+                    return;
+                }
+                for (let i = 1; i <= quantity; i++) {
+                    addOptionRow(`${i}`, 1, defaultColors[(i - 1) % defaultColors.length]);
+                }
+            } else if (mode === 'yesno') {
+                addOptionRow(currentLang === 'es' ? 'SÍ' : 'YES', 1, '#2ed573');
+                addOptionRow('NO', 1, '#ff3366');
+            } else if (mode === 'weeks') {
+                const daysEs = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                const daysEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const selectedDays = currentLang === 'es' ? daysEs : daysEn;
+                selectedDays.forEach((d, i) => addOptionRow(d, 1, defaultColors[i % defaultColors.length]));
+            } else if (mode === 'colors') {
+                const colorNames = currentLang === 'es' ? ['Rojo', 'Verde', 'Azul', 'Amarillo'] : ['Red', 'Green', 'Blue', 'Yellow'];
+                const hexs = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502'];
+                colorNames.forEach((name, i) => addOptionRow(name, 1, hexs[i]));
+            }
+
+            updateWheel();
+            mainMenu.style.display = 'none';
+            closeTemplatesModal();
         }
 
-        // --- SISTEMA DE FILAS DE OPCIONES ---
         function addOptionRow(text = '', weight = 1, color = '#ffffff') {
             const row = document.createElement('div');
             row.className = 'option-row';
+            const uniqueId = 'img_' + Math.random().toString(36).substring(2, 9);
+
             row.innerHTML = `
-                <input type="text" class="opt-text" value="${text}" placeholder="Escribe algo..." oninput="updateWheel()">
-                <input type="number" class="opt-weight" value="${weight}" min="1" title="Probabilidad (Peso)" oninput="updateWheel()">
+                <input type="text" class="opt-text" value="${text}" placeholder="..." oninput="updateWheel()">
+                <input type="number" class="opt-weight" value="${weight}" min="1" oninput="updateWheel()">
+                <button class="image-upload-btn" onclick="document.getElementById('${uniqueId}').click()">🖼️</button>
+                <input type="file" id="${uniqueId}" accept="image/*" style="display:none;" onchange="handleImageSelect(this)">
+                <img class="image-preview-thumb" src="" alt="preview">
                 <input type="color" class="opt-color" value="${color}" onchange="updateWheel()">
                 <button class="btn-delete" onclick="this.parentElement.remove(); updateWheel();">❌</button>
             `;
@@ -393,25 +565,39 @@
             updateWheel();
         }
 
+        function handleImageSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                const imgThumb = input.parentElement.querySelector('.image-preview-thumb');
+                reader.onload = function(e) {
+                    imgThumb.src = e.target.result;
+                    imgThumb.style.display = 'block';
+                    const imgObj = new Image();
+                    imgObj.src = e.target.result;
+                    imgObj.onload = () => updateWheel();
+                    input.dataImageObject = imgObj;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
         function getItemsFromInputs() {
             const rows = document.querySelectorAll('.option-row');
             items = [];
             rows.forEach((row, index) => {
-                const text = row.querySelector('.opt-text').value.trim() || `Opción ${index + 1}`;
+                const text = row.querySelector('.opt-text').value.trim() || `${index + 1}`;
                 const weight = parseFloat(row.querySelector('.opt-weight').value) || 1;
                 const color = row.querySelector('.opt-color').value;
-                // Guardamos la referencia de la fila del HTML para poder borrarla fácilmente si gana
-                items.push({ text, weight, color, element: row });
+                const fileInput = row.querySelector('input[type="file"]');
+                const loadedImage = fileInput.dataImageObject || null;
+                items.push({ text, weight, color, img: loadedImage, element: row });
             });
         }
 
-        // --- DIBUJAR RULETA ---
         function updateWheel() {
             getItemsFromInputs();
-            if (items.length === 0) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                return;
-            }
+            if (items.length === 0) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
 
             const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
             const centerX = canvas.width / 2;
@@ -431,29 +617,56 @@
                 ctx.fillStyle = item.color;
                 ctx.fill();
                 ctx.strokeStyle = '#121214';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Añadir Texto
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + sliceAngle / 2);
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 18px sans-serif";
-                ctx.shadowBlur = 4;
-                ctx.shadowColor = "rgba(0,0,0,0.8)";
+
+                if (item.img) {
+                    ctx.save();
+                    ctx.translate(radius * 0.55, 0);
+                    ctx.rotate(Math.PI / 2);
+                    const imgSize = Math.min(40, (sliceAngle * radius * 0.4));
+                    if (imgSize > 10) {
+                        ctx.beginPath(); ctx.arc(0, 0, imgSize / 2, 0, Math.PI * 2); ctx.clip();
+                        ctx.drawImage(item.img, -imgSize/2, -imgSize/2, imgSize, imgSize);
+                    }
+                    ctx.restore();
+                }
+
+                ctx.textAlign = "right"; ctx.fillStyle = "#fff";
+                ctx.font = "bold 15px sans-serif";
+                ctx.shadowBlur = 4; ctx.shadowColor = "rgba(0,0,0,0.8)";
                 
                 let txt = item.text;
-                if(txt.length > 12) txt = txt.substring(0,10) + '..';
-                ctx.fillText(txt, radius - 25, 6);
+                if(txt.length > 10) txt = txt.substring(0,8) + '..';
+                ctx.fillText(txt, item.img ? radius - 15 : radius - 25, 5);
+                
                 ctx.restore();
-
                 startAngle += sliceAngle;
             });
         }
 
-        // --- LÓGICA DE GIRO Y GANADOR ---
+        let tickInterval;
+        function startTickEffect(totalTimeMs) {
+            if(effectSelector.value === 'off') return;
+            const msPerStep = 30; 
+            let elapsed = 0;
+
+            clearInterval(tickInterval);
+            tickInterval = setInterval(() => {
+                elapsed += msPerStep;
+                if(elapsed >= totalTimeMs) { clearInterval(tickInterval); return; }
+                
+                if (Math.random() > 0.65) {
+                    wheelMarker.classList.add('tick-active');
+                    setTimeout(() => wheelMarker.classList.remove('tick-active'), 100);
+                }
+            }, msPerStep);
+        }
+
         function spinWheel() {
             if (isSpinning || items.length === 0) return;
             isSpinning = true;
@@ -464,61 +677,66 @@
 
             for (let i = 0; i < items.length; i++) {
                 randomWeight -= items[i].weight;
-                if (randomWeight <= 0) {
-                    winningIndex = i;
-                    break;
-                }
+                if (randomWeight <= 0) { winningIndex = i; break; }
             }
 
             lastWinnerIndex = winningIndex;
 
-            // Calcular el ángulo exacto para detenerse en la flecha de arriba (270°)
             let currentAngleSum = 0;
-            for(let i=0; i<winningIndex; i++) {
-                currentAngleSum += (items[i].weight / totalWeight) * 360;
-            }
+            for(let i=0; i<winningIndex; i++) currentAngleSum += (items[i].weight / totalWeight) * 360;
             const currentSliceSize = (items[winningIndex].weight / totalWeight) * 360;
             const targetDegrees = 270 - (currentAngleSum + (currentSliceSize / 2));
 
-            const extraSpins = (Math.floor(Math.random() * 4) + 6) * 360; // 6-10 vueltas locas
+            const extraSpins = (Math.floor(Math.random() * 4) + (spinDuration < 2 ? 12 : 6)) * 360; 
             currentRotation = extraSpins + targetDegrees;
 
             canvas.style.transform = `rotate(${currentRotation}deg)`;
+            
+            startTickEffect(spinDuration * 1000);
 
-            // Al finalizar los 4 segundos de la animación:
             setTimeout(() => {
                 isSpinning = false;
-                showWinnerPopup(items[winningIndex].text);
-            }, 4000);
+                showWinnerPopup(items[winningIndex]);
+            }, spinDuration * 1000);
         }
 
-        // --- ACCIONES DEL POPUP ---
-        function showWinnerPopup(name) {
-            winnerText.innerText = name;
+        function showWinnerPopup(winnerItem) {
+            winnerText.innerText = winnerItem.text;
+            popupWinnerImg.style.display = winnerItem.img ? 'inline-block' : 'none';
+            if(winnerItem.img) popupWinnerImg.src = winnerItem.img.src;
             winnerPopup.style.display = 'flex';
+
+            historyLog.unshift(winnerItem.text);
+            if(historyLog.length > 10) historyLog.pop();
+            renderHistory();
         }
 
-        function closePopup() {
-            winnerPopup.style.display = 'none';
+        function renderHistory() {
+            historyContainer.innerHTML = '';
+            historyLog.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `<span>#${historyLog.length - index}</span> <strong>${item}</strong>`;
+                historyContainer.appendChild(div);
+            });
         }
+
+        function closePopup() { winnerPopup.style.display = 'none'; }
 
         function removeWinnerAction() {
             if (lastWinnerIndex !== null && items[lastWinnerIndex]) {
-                // Borramos la fila del HTML
                 items[lastWinnerIndex].element.remove();
-                // Actualizamos los datos internos y redibujamos
                 updateWheel();
             }
             closePopup();
         }
 
-        // Eventos táctiles para tablets en el centro de la ruleta
         centerSpin.addEventListener('click', spinWheel);
-        centerSpin.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            spinWheel();
-        });
+        centerSpin.addEventListener('touchstart', (e) => { e.preventDefault(); spinWheel(); });
+        
+        // Carga Inicial
+        updateSpeedSettings();
+        changeLanguage();
     </script>
 </body>
 </html>
-
